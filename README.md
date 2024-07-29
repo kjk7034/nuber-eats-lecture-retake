@@ -55,3 +55,81 @@ UserSchema.pre('save', async function (next) {
   ],
 })
 ```
+
+### 6강 USER AUTHENTICATION
+
+#### NestJS에서 Middleware 사용하는 방법 (jwtMiddleWare예시)
+
+1. bootstrap에 적용
+
+```typescript
+async function bootstrap() {
+  // ...
+  app.use(jwtMiddleware);
+  // ...
+}
+```
+
+2. AppModule에 적용
+
+```typescript
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    // 함수(jwtMiddleware)나 Class(JwtMiddleware) 적용
+    consumer.apply(jwtMiddleware).forRoutes({
+      path: '*',
+      method: RequestMethod.ALL,
+    });
+  }
+}
+
+// 함수
+export function jwtMiddleware(req: Request, res: Response, next: NextFunction) {
+  console.log(req.headers);
+  next();
+}
+
+// Class
+export class JwtMiddleware implements NestMiddleware {
+  use(req: Request, res: Response, next: NextFunction) {
+    console.log('req', req.headers);
+    next();
+  }
+}
+```
+
+#### TypeORM BeforeInsert, BeforeUpdate 처리
+
+`UserSchema.pre`를 이용
+
+```typescript
+// ./src/users/entities/user.entity.ts
+
+// TypeORM BeforeInsert
+UserSchema.pre('save', async function (next) {
+  if (!this.isModified('password')) {
+    return next();
+  }
+  try {
+    this.password = await hashPassword(this.password);
+    return next();
+  } catch (e) {
+    return next(e);
+  }
+});
+
+// TypeORM BeforeUpdate
+UserSchema.pre('findOneAndUpdate', async function (next) {
+  const update = this.getUpdate() as UpdateQuery<User>;
+  if (update.$set && update.$set.password) {
+    try {
+      update.$set.password = await hashPassword(update.$set.password);
+    } catch (error) {
+      return next(error);
+    }
+  }
+  return next();
+});
+```
+
+`16.15`강의에 있지만 BeforeUpdate 사용 시 password를 변환하지 않음. 그래서 TypeORM에서 postgresql 사용 시, update대신 findOne, save 사용.

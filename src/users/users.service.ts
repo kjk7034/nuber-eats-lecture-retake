@@ -1,15 +1,20 @@
 import { InjectModel } from '@nestjs/mongoose';
-import { User } from './entities/user.entity';
 import { Model } from 'mongoose';
 import {
   CreateAccountInput,
   CreateAccountOutput,
 } from './dtos/create-account.dto';
+import { User } from './entities/user.entity';
 import { LoginInput, LoginOutput } from './dtos/login.dto';
 import { comparePasswords } from './user.utils';
+import { JwtService } from 'src/jwt/jwt.service';
+import { EditProfileInput } from './dtos/edit-profile.dto';
 
 export class UsersService {
-  constructor(@InjectModel(User.name) private users: Model<User>) {}
+  constructor(
+    @InjectModel(User.name) private users: Model<User>,
+    private readonly jwtService: JwtService,
+  ) {}
 
   async findAll() {
     return this.users.find().exec();
@@ -35,7 +40,6 @@ export class UsersService {
         ok: true,
       };
     } catch (e) {
-      console.log('e', e);
       return {
         error: '계정을 생성할 수 없습니다.',
         ok: false,
@@ -58,10 +62,12 @@ export class UsersService {
         };
       }
 
+      const token = this.jwtService.sign(user.id);
+
       // 로그인 성공 로직
       return {
         ok: true,
-        token: 'lalalal',
+        token,
       };
     } catch (error) {
       return {
@@ -69,5 +75,17 @@ export class UsersService {
         ok: false,
       };
     }
+  }
+
+  async findById(id: string): Promise<User> {
+    return this.users.findById(id);
+  }
+
+  async editProfile(userId: string, editProfileInput: EditProfileInput) {
+    return this.users.findByIdAndUpdate(
+      userId,
+      { $set: { ...editProfileInput } },
+      { new: true, runValidators: true },
+    );
   }
 }
