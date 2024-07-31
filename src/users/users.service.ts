@@ -8,12 +8,21 @@ import { User } from './entities/user.entity';
 import { LoginInput, LoginOutput } from './dtos/login.dto';
 import { comparePasswords } from './user.utils';
 import { JwtService } from 'src/jwt/jwt.service';
-import { EditProfileInput } from './dtos/edit-profile.dto';
+import {
+  EditProfileDtoOutput,
+  EditProfileInput,
+} from './dtos/edit-profile.dto';
+import { Verification } from './entities/verification.entity';
+import { VerifyEmailOutput } from './dtos/verify-email.dto';
+import { UserProfileOutput } from './dtos/user-profile.dto';
+import { MailService } from 'src/mail/mail.service';
 
 export class UsersService {
   constructor(
     @InjectModel(User.name) private users: Model<User>,
+    @InjectModel(Verification.name) private verifications: Model<Verification>,
     private readonly jwtService: JwtService,
+    private readonly mailService: MailService,
   ) {}
 
   async findAll() {
@@ -34,8 +43,11 @@ export class UsersService {
         };
       }
 
-      await this.users.create({ email, password, role });
-
+      const user = await this.users.create({ email, password, role });
+      const verification = await this.verifications.create({
+        user,
+      });
+      this.mailService.sendVerificationEmail(user.email, verification.code);
       return {
         ok: true,
       };
@@ -49,7 +61,7 @@ export class UsersService {
 
   async login({ email, password }: LoginInput): Promise<LoginOutput> {
     try {
-      const user = await this.users.findOne({ email });
+      const user = await this.users.findOne({ email }).select('+password');
 
       const isPasswordValid = user
         ? await comparePasswords(password, user.password)
@@ -77,15 +89,91 @@ export class UsersService {
     }
   }
 
-  async findById(id: string): Promise<User> {
-    return this.users.findById(id);
+  async findById(id: string): Promise<UserProfileOutput> {
+    try {
+      const user = await this.users.findById(id);
+      if (!user) {
+        throw Error();
+      }
+      return {
+        ok: true,
+        user,
+      };
+    } catch (error) {
+      return {
+        error: 'User Not Found',
+        ok: false,
+      };
+    }
   }
 
-  async editProfile(userId: string, editProfileInput: EditProfileInput) {
-    return this.users.findByIdAndUpdate(
-      userId,
-      { $set: { ...editProfileInput } },
-      { new: true, runValidators: true },
-    );
+  async editProfile(
+    userId: string,
+    editProfileInput: EditProfileInput,
+  ): Promise<EditProfileDtoOutput> {
+    try {
+      if (editProfileInput.email) {
+        editProfileInput.verified = false;
+
+        // 기존 verification 삭제
+        await this.verifications.deleteMany({ user: userId });
+
+        // 새 verification 생성
+        const verification = await this.verifications.create({ user: userId });
+        this.mailService.sendVerificationEmail(
+          editProfileInput.email,
+          verification.code,
+        );
+      }
+
+      await this.users.findByIdAndUpdate(
+        userId,
+        { $set: { ...editProfileInput } },
+        { new: true, runValidators: true },
+      );
+
+      return {
+        ok: true,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error,
+      };
+    }
+  }
+
+  async verifyEmail(code: string): Promise<VerifyEmailOutput> {
+    try {
+      // this.mailService.sendWelcomeEmail('wise7034@gmail.com');
+      // // this.mailService.sendEmail({
+      // //   to: 'wise7034@gmail.com',
+      // //   subject: 'subjectsubject',
+      // //   text: 'ttttt',
+      // // });
+      // const response = await this.mailService.sendEmail();
+      // console.log('response', response);
+      const verification = await this.verifications
+        .findOne({ code })
+        .populate('user')
+        .exec();
+      if (verification) {
+        await this.users.findByIdAndUpdate(
+          verification.user.id,
+          { $set: { verified: true } },
+          { new: true, runValidators: true },
+        );
+        await this.verifications.deleteOne(verification.id);
+        return {
+          ok: true,
+        };
+      }
+      throw new Error();
+    } catch (error) {
+      return {
+        ok: false,
+        error,
+      };
+    }
   }
 }

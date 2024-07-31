@@ -6,9 +6,10 @@ import {
 } from '@nestjs/graphql';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { CoreEntity } from 'src/common/entities/common.entity';
-import { IsEmail, IsEnum } from 'class-validator';
+import { IsBoolean, IsEmail, IsEnum } from 'class-validator';
 import { hashPassword } from '../user.utils';
-import { UpdateQuery } from 'mongoose';
+import { Model, Query, UpdateQuery } from 'mongoose';
+import { Verification } from './verification.entity';
 
 export enum UserRole {
   Client = 'Client',
@@ -30,7 +31,7 @@ export class User extends CoreEntity {
   @IsEmail()
   email: string;
 
-  @Prop()
+  @Prop({ select: false })
   @Field(() => String)
   password: string;
 
@@ -38,6 +39,11 @@ export class User extends CoreEntity {
   @Field(() => UserRole)
   @IsEnum(UserRole)
   role: UserRole;
+
+  @Prop({ default: false })
+  @Field(() => Boolean)
+  @IsBoolean()
+  verified: boolean;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
@@ -66,4 +72,20 @@ UserSchema.pre('findOneAndUpdate', async function (next) {
     }
   }
   return next();
+});
+
+// TypeORM onDelete: 'CASCADE' 구현
+UserSchema.pre<Query<any, User>>('findOneAndDelete', async function (next) {
+  try {
+    const user = (await this.model.findOne(this.getFilter())) as User | null;
+    if (user) {
+      const VerificationModel: Model<Verification> = new this.model(
+        'Verification',
+      );
+      await VerificationModel.deleteOne({ user: user.id });
+    }
+    next();
+  } catch (error) {
+    next(error instanceof Error ? error : new Error('Unknown error'));
+  }
 });

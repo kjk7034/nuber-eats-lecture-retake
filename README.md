@@ -4,7 +4,7 @@
 
 그 후 백엔드 개발을 하지 않아서 많은 것을 잊어버렸고, 백엔드 개발을 해야 할 기회가 생겨 재수강을 하면서 다시 정리를!!
 
-## 진행하면서 발생한 내용들 메모
+## 학습 메모
 
 ### 2강 GRAPHQL API
 
@@ -133,3 +133,38 @@ UserSchema.pre('findOneAndUpdate', async function (next) {
 ```
 
 `16.15`강의에 있지만 BeforeUpdate 사용 시 password를 변환하지 않음. 그래서 TypeORM에서 postgresql 사용 시, update대신 findOne, save 사용.
+
+### 7강 EMAIL VERIFICATION
+
+typeorm에서는 JoinColumn을 사용하지만 mongoose에서는 Types.ObjectId를 사용함.
+
+```typescript
+  @Prop({ type: Types.ObjectId, ref: 'User' })
+  @Field(() => User)
+  user: User;
+```
+
+TypeORM의 onDelete: 'CASCADE'와 같은 기능은 Mongoose에서 자동으로 제공되지 않음.
+만약 구현한다면, 다음과 같이 구현할 수 있음.
+
+```typescript
+// TypeORM onDelete: 'CASCADE' 와 비슷한 기능 구현 샘플
+UserSchema.pre<Query<any, User>>('findOneAndDelete', async function (next) {
+  try {
+    const user = (await this.model.findOne(this.getFilter())) as User | null;
+    if (user) {
+      const VerificationModel: Model<Verification> = new this.model(
+        'Verification',
+      );
+      await VerificationModel.deleteOne({ user: user.id });
+    }
+    next();
+  } catch (error) {
+    next(error instanceof Error ? error : new Error('Unknown error'));
+  }
+});
+```
+
+강의에서는 `Mailgun`을 사용해서 직접 구현했지만, 나는 `mailersend`를 적용해봄.
+
+템플릿도 쉽게 적용할 수 있었음.

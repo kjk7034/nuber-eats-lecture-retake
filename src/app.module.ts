@@ -13,6 +13,7 @@ import { JwtModule } from './jwt/jwt.module';
 import * as Joi from 'joi';
 import { JwtMiddleware } from './jwt/jwt.middleware';
 import { AuthModule } from './auth/auth.module';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -24,6 +25,10 @@ import { AuthModule } from './auth/auth.module';
         NODE_ENV: Joi.string().valid('dev', 'prod'),
         DB_URI: Joi.string().required(),
         PRIVATE_KEY: Joi.string().required(),
+        MAIL_API_TOKEN: Joi.string().required(),
+        MAIL_FROM_EMAIL: Joi.string().required(),
+        MAIL_FROM_NAME: Joi.string().required(),
+        MAIL_TEMPLATE_VERIFICATION: Joi.string().required(),
       }),
     }),
     MongooseModule.forRoot(process.env.DB_URI),
@@ -35,8 +40,14 @@ import { AuthModule } from './auth/auth.module';
       },
       context: ({ req }) => ({ user: req['user'] }),
     }),
-    UsersModule,
+    MailModule.forRoot({
+      apiToken: process.env.MAIL_API_TOKEN,
+      fromEmail: process.env.MAIL_FROM_EMAIL,
+      fromName: process.env.MAIL_FROM_NAME,
+      templateVerification: process.env.MAIL_TEMPLATE_VERIFICATION,
+    }),
     JwtModule.forRoot({ privateKey: process.env.PRIVATE_KEY }),
+    UsersModule,
     AuthModule,
   ],
   controllers: [],
