@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from './entities/user.entity';
-import { UsersResolver } from './users.resolver';
-import { UsersService } from './users.service';
+import { UserResolver } from './users.resolver';
+import { UserService } from './users.service';
 import {
   Verification,
   VerificationSchema,
@@ -15,7 +15,7 @@ import {
       { name: Verification.name, schema: VerificationSchema },
     ]),
   ],
-  providers: [UsersResolver, UsersService],
-  exports: [UsersService],
+  providers: [UserResolver, UserService],
+  exports: [UserService],
 })
 export class UsersModule {}

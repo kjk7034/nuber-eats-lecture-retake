@@ -1,5 +1,5 @@
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
-import { UsersService } from './users.service';
+import { UserService } from './users.service';
 import { User } from './entities/user.entity';
 import {
   CreateAccountInput,
@@ -17,26 +17,21 @@ import {
 import { VerifyEmailInput, VerifyEmailOutput } from './dtos/verify-email.dto';
 
 @Resolver(() => User)
-export class UsersResolver {
-  constructor(private readonly usersService: UsersService) {}
-
-  @Query(() => [User])
-  users(): Promise<User[]> {
-    return this.usersService.findAll();
-  }
+export class UserResolver {
+  constructor(private readonly userService: UserService) {}
 
   @Mutation(() => CreateAccountOutput)
   async createAccount(
     @Args('input') createAccountInput: CreateAccountInput,
   ): Promise<CreateAccountOutput> {
-    return this.usersService.create(createAccountInput);
+    return this.userService.createAccount(createAccountInput);
   }
 
   @Mutation(() => LoginOutput)
   async login(
     @Args('input') loginInput: LoginInput,
   ): Promise<CreateAccountOutput> {
-    return this.usersService.login(loginInput);
+    return this.userService.login(loginInput);
   }
 
   @Query(() => User)
@@ -50,7 +45,7 @@ export class UsersResolver {
   async userProfile(
     @Args() userProfileInput: UserProfileInput,
   ): Promise<UserProfileOutput> {
-    return this.usersService.findById(userProfileInput.userId);
+    return this.userService.findById(userProfileInput.userId);
   }
 
   @Mutation(() => EditProfileDtoOutput)
@@ -59,13 +54,13 @@ export class UsersResolver {
     @AuthUser() authUser: User,
     @Args('input') edifProfileInput: EditProfileInput,
   ): Promise<EditProfileDtoOutput> {
-    return this.usersService.editProfile(authUser.id, edifProfileInput);
+    return this.userService.editProfile(authUser.id, edifProfileInput);
   }
 
   @Mutation(() => VerifyEmailOutput)
   async verifyEmail(
     @Args('input') { code }: VerifyEmailInput,
   ): Promise<VerifyEmailOutput> {
-    return this.usersService.verifyEmail(code);
+    return this.userService.verifyEmail(code);
   }
 }

@@ -17,7 +17,7 @@ import { VerifyEmailOutput } from './dtos/verify-email.dto';
 import { UserProfileOutput } from './dtos/user-profile.dto';
 import { MailService } from 'src/mail/mail.service';
 
-export class UsersService {
+export class UserService {
   constructor(
     @InjectModel(User.name) private users: Model<User>,
     @InjectModel(Verification.name) private verifications: Model<Verification>,
@@ -25,11 +25,7 @@ export class UsersService {
     private readonly mailService: MailService,
   ) {}
 
-  async findAll() {
-    return this.users.find().exec();
-  }
-
-  async create({
+  async createAccount({
     email,
     password,
     role,
@@ -145,14 +141,6 @@ export class UsersService {
 
   async verifyEmail(code: string): Promise<VerifyEmailOutput> {
     try {
-      // this.mailService.sendWelcomeEmail('wise7034@gmail.com');
-      // // this.mailService.sendEmail({
-      // //   to: 'wise7034@gmail.com',
-      // //   subject: 'subjectsubject',
-      // //   text: 'ttttt',
-      // // });
-      // const response = await this.mailService.sendEmail();
-      // console.log('response', response);
       const verification = await this.verifications
         .findOne({ code })
         .populate('user')

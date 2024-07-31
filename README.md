@@ -165,6 +165,12 @@ UserSchema.pre<Query<any, User>>('findOneAndDelete', async function (next) {
 });
 ```
 
-강의에서는 `Mailgun`을 사용해서 직접 구현했지만, 나는 `mailersend`를 적용해봄.
+강의에서는 `Mailgun`을 사용해서 직접 구현했지만, 나는 [`mailersend`](https://www.mailersend.com/)를 적용해봄.
 
 템플릿도 쉽게 적용할 수 있었음.
+
+### 8강 UNIT TESTING THE USER SERVICE
+
+강의와 코드가 다르다보니 테스트 코드에서 mocking 하는 부분이 조금 차이가 있었음.
+
+<img src="./docs/testcode.PNG" alt="테스트 커버리지 결과: users.service.ts 100% 달성" width="50%" />
