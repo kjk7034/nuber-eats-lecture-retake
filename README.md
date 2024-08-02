@@ -173,4 +173,6 @@ UserSchema.pre<Query<any, User>>('findOneAndDelete', async function (next) {
 
 강의와 코드가 다르다보니 테스트 코드에서 mocking 하는 부분이 조금 차이가 있었음.
 
-<img src="./docs/testcode.PNG" alt="테스트 커버리지 결과: users.service.ts 100% 달성" width="50%" />
+### 9강 Unit Testing Jwt and Mail
+
+<img src="./docs/testcode.PNG" alt="테스트 커버리지 결과: 3개의 service 100% 달성" width="50%" />

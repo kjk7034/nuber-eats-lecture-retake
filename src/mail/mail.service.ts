@@ -25,7 +25,7 @@ export class MailService {
     subject: string,
     templateId: string,
     substitutions: VariableSubstitution[],
-  ) {
+  ): Promise<boolean> {
     const to = 'kjk7034@naver.com';
 
     const variables = [
@@ -35,9 +35,11 @@ export class MailService {
       },
     ];
 
-    const recipients = Array.isArray(to)
-      ? to.map((email) => new Recipient(email))
-      : [new Recipient(to)];
+    // const recipients = Array.isArray(to)
+    //   ? to.map((email) => new Recipient(email))
+    //   : [new Recipient(to)];
+
+    const recipients = [new Recipient(to)];
 
     const emailParams = new EmailParams()
       .setFrom(this.sender)
@@ -49,8 +51,10 @@ export class MailService {
 
     try {
       await this.mailersend.email.send(emailParams);
+      return true;
     } catch (error) {
       console.log(error);
+      return false;
     }
   }
 
