@@ -1,5 +1,5 @@
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import {
   CreateAccountInput,
   CreateAccountOutput,
@@ -112,7 +112,8 @@ export class UserService {
         editProfileInput.verified = false;
 
         // 기존 verification 삭제
-        await this.verifications.deleteMany({ user: userId });
+        const objectId = new Types.ObjectId(userId);
+        await this.verifications.deleteMany({ user: objectId });
 
         // 새 verification 생성
         const verification = await this.verifications.create({ user: userId });
@@ -151,17 +152,14 @@ export class UserService {
           { $set: { verified: true } },
           { new: true, runValidators: true },
         );
-        await this.verifications.deleteOne(verification.id);
+        await this.verifications.deleteOne({ _id: verification.id });
         return {
           ok: true,
         };
       }
-      throw new Error();
+      return { ok: false, error: 'Verification not found.' };
     } catch (error) {
-      return {
-        ok: false,
-        error,
-      };
+      return { ok: false, error: 'Could not verify email.' };
     }
   }
 }

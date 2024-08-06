@@ -22,7 +22,7 @@ import { MailModule } from './mail/mail.module';
       envFilePath: process.env.NODE_ENV === 'dev' ? '.env.dev' : '.env.test',
       ignoreEnvFile: process.env.NODE_ENV === 'prod',
       validationSchema: Joi.object({
-        NODE_ENV: Joi.string().valid('dev', 'prod'),
+        NODE_ENV: Joi.string().valid('dev', 'prod', 'test'),
         DB_URI: Joi.string().required(),
         PRIVATE_KEY: Joi.string().required(),
         MAIL_API_TOKEN: Joi.string().required(),

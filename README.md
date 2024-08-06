@@ -176,3 +176,10 @@ UserSchema.pre<Query<any, User>>('findOneAndDelete', async function (next) {
 ### 9강 Unit Testing Jwt and Mail
 
 <img src="./docs/testcode.PNG" alt="테스트 커버리지 결과: 3개의 service 100% 달성" width="50%" />
+
+### 10강 User Module E2E
+
+`this.verifications`에서 삭제 관련 내용들을 수정했다.
+
+제대로 삭제가 되지 않는 현상을 확인함. 이래서 test db로 직접 E2E 테스트를 하는 게 좋다고 생각함.
+(프론트에서도 해야 하는데 ... ^^;;)

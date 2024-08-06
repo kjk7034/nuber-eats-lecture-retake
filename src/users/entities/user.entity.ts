@@ -26,7 +26,7 @@ registerEnumType(UserRole, {
 @ObjectType()
 @Schema({ timestamps: true, _id: true })
 export class User extends CoreEntity {
-  @Prop()
+  @Prop({ unique: true })
   @Field(() => String)
   @IsEmail()
   email: string;
