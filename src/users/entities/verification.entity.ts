@@ -5,7 +5,7 @@ import { Types } from 'mongoose';
 import { v4 as uuidv4 } from 'uuid';
 import { User } from './user.entity';
 
-@InputType({ isAbstract: true })
+@InputType('VerificationInputType', { isAbstract: true })
 @ObjectType()
 @Schema({ timestamps: true, _id: true })
 export class Verification extends CoreEntity {

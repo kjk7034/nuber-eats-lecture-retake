@@ -1,39 +1,51 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Restaurant } from './entities/restaurant.entity';
-import { CreateRestaurantDto } from './dtos/create-restaurant.dto';
-import { UpdateRestaurantDto } from './dtos/update-restaurant.dto';
+import {
+  CreateRestaurantInput,
+  CreateRestaurantOutput,
+} from './dtos/create-restaurant.dto';
+import { User } from 'src/users/entities/user.entity';
+import { Category } from './entities/category.entity';
 
 @Injectable()
 export class RestaurantService {
   constructor(
-    @InjectModel(Restaurant.name) private restaurantModel: Model<Restaurant>,
+    @InjectModel(Restaurant.name) private restaurants: Model<Restaurant>,
+    @InjectModel(Category.name) private categories: Model<Category>,
   ) {}
 
-  async findAll(): Promise<Restaurant[]> {
-    return this.restaurantModel.find().exec();
-  }
-
-  async create(createRestaurantDto: CreateRestaurantDto): Promise<Restaurant> {
-    const createdRestaurant = new this.restaurantModel(createRestaurantDto);
-    return createdRestaurant.save();
-  }
-
-  async update(
-    id: string,
-    updateRestaurantDto: UpdateRestaurantDto,
-  ): Promise<Restaurant> {
-    const updatedRestaurant = await this.restaurantModel.findByIdAndUpdate(
-      id,
-      { $set: updateRestaurantDto },
-      { new: true, runValidators: true },
-    );
-
-    if (!updatedRestaurant) {
-      throw new NotFoundException(`Restaurant with ID "${id}" not found`);
+  async createRestaurant(
+    owner: User,
+    createRestaurantInput: CreateRestaurantInput,
+  ): Promise<CreateRestaurantOutput> {
+    try {
+      const newRestaurant = await this.restaurants.create(
+        createRestaurantInput,
+      );
+      newRestaurant.owner = owner;
+      const categoryName = createRestaurantInput.categoryName
+        .trim()
+        .toLowerCase();
+      const categorySlug = categoryName.replace(/ /g, '-');
+      let category = await this.categories.findOne({ slug: categorySlug });
+      if (!category) {
+        category = await this.categories.create({
+          slug: categorySlug,
+          name: categoryName,
+        });
+      }
+      newRestaurant.category = category;
+      await this.restaurants.create(newRestaurant);
+      return {
+        ok: true,
+      };
+    } catch {
+      return {
+        ok: false,
+        error: 'Could not create restaurant',
+      };
     }
-
-    return updatedRestaurant;
   }
 }

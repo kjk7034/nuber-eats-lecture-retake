@@ -6,10 +6,11 @@ import {
 } from '@nestjs/graphql';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { CoreEntity } from 'src/common/entities/common.entity';
-import { IsBoolean, IsEmail, IsEnum } from 'class-validator';
+import { IsBoolean, IsEmail, IsEnum, IsString } from 'class-validator';
 import { hashPassword } from '../user.utils';
-import { Model, Query, UpdateQuery } from 'mongoose';
+import { Model, Query, Types, UpdateQuery } from 'mongoose';
 import { Verification } from './verification.entity';
+import { Restaurant } from 'src/restaurants/entities/restaurant.entity';
 
 export enum UserRole {
   Client = 'Client',
@@ -22,28 +23,33 @@ registerEnumType(UserRole, {
   description: 'User roles',
 });
 
-@InputType({ isAbstract: true })
+@InputType('UserInputType', { isAbstract: true })
 @ObjectType()
 @Schema({ timestamps: true, _id: true })
 export class User extends CoreEntity {
-  @Prop({ unique: true })
   @Field(() => String)
+  @Prop({ unique: true })
   @IsEmail()
   email: string;
 
-  @Prop({ select: false })
   @Field(() => String)
+  @Prop({ select: false })
+  @IsString()
   password: string;
 
-  @Prop({ type: String, enum: UserRole })
   @Field(() => UserRole)
+  @Prop({ type: String, enum: UserRole })
   @IsEnum(UserRole)
   role: UserRole;
 
-  @Prop({ default: false })
   @Field(() => Boolean)
+  @Prop({ default: false })
   @IsBoolean()
   verified: boolean;
+
+  @Field(() => [Restaurant])
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Restaurant' }] })
+  restaurants: Types.ObjectId[] | Restaurant[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

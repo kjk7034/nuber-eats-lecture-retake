@@ -14,6 +14,7 @@ import * as Joi from 'joi';
 import { JwtMiddleware } from './jwt/jwt.middleware';
 import { AuthModule } from './auth/auth.module';
 import { MailModule } from './mail/mail.module';
+import { RestaurantsModule } from './restaurants/restaurants.module';
 
 @Module({
   imports: [
@@ -47,8 +48,9 @@ import { MailModule } from './mail/mail.module';
       templateVerification: process.env.MAIL_TEMPLATE_VERIFICATION,
     }),
     JwtModule.forRoot({ privateKey: process.env.PRIVATE_KEY }),
-    UsersModule,
     AuthModule,
+    UsersModule,
+    RestaurantsModule,
   ],
   controllers: [],
   providers: [],
