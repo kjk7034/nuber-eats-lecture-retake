@@ -1,6 +1,6 @@
 import { Field, InputType, ObjectType } from '@nestjs/graphql';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { IsString, Length } from 'class-validator';
+import { IsOptional, IsString, Length } from 'class-validator';
 import { HydratedDocument, Types } from 'mongoose';
 import { CoreEntity } from 'src/common/entities/common.entity';
 import { Category } from './category.entity';
@@ -29,7 +29,12 @@ export class Restaurant extends CoreEntity {
   address: string;
 
   @Field(() => Category, { nullable: true })
-  @Prop({ type: Types.ObjectId, ref: 'Category', required: false })
+  @Prop({
+    type: Types.ObjectId,
+    ref: 'Category',
+    required: false,
+  })
+  @IsOptional()
   category?: Types.ObjectId | Category;
 
   @Field(() => User)

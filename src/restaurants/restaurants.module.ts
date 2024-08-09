@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { RestaurantResolver } from './restaurants.resolver';
+import { CategoryResolver, RestaurantResolver } from './restaurants.resolver';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Restaurant, RestaurantSchema } from './entities/restaurant.entity';
 import { RestaurantService } from './restaurant.service';
@@ -12,6 +12,6 @@ import { Category, CategorySchema } from './entities/category.entity';
       { name: Category.name, schema: CategorySchema },
     ]),
   ],
-  providers: [RestaurantResolver, RestaurantService],
+  providers: [RestaurantResolver, CategoryResolver, RestaurantService],
 })
 export class RestaurantsModule {}

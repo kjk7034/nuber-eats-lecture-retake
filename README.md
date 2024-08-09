@@ -183,3 +183,52 @@ UserSchema.pre<Query<any, User>>('findOneAndDelete', async function (next) {
 
 제대로 삭제가 되지 않는 현상을 확인함. 이래서 test db로 직접 E2E 테스트를 하는 게 좋다고 생각함.
 (프론트에서도 해야 하는데 ... ^^;;)
+
+### 11강 Restaurant CRUD
+
+개발 중 `MongoServerError: E11000 duplicate key error collection:`가 발생했다.
+
+- 테이블도 지워보고, 코드도 변경해보고 ... 검색, GPT, Claude를 동원했지만, 해결하지 못했다.
+- 결국 DB를 완전히 초기화(삭제후 생성)하니 해결되었다.
+- 발생한 원인으로 개발하는 과정에서 `unique`를 넣었다 뺐다 하면서 발생했다고 생각한다.
+
+`EntityRepository deprecated` 관련해서는 [강의 댓글](https://nomadcoders.co/nuber-eats/lectures/2115)에서 여러 케이스를 확인할 수 있다.
+나는 TypeORM을 사용하지 않아서 `@Injectable()`을 이용해서 테스트를 진행했었다.
+
+TypeORM에서 `ManyToOne, OneToMany`등 다양하게 관계를 맺었지만, 몽고에서는 단순하게 단방향으로 구성하고 `ResolveField`를 이용해서 역방향 관계를 구현할 수 했음.
+
+추후 관련 데이터를 가져올때는 Mongoose의 `populate` 메서드를 사용.
+
+`ResolveField`를 사용하는 것은 대부분의 경우 성능상 이점이 있을 수 있지만, 항상 그런 것은 아니므로 애플리케이션의 특성, 모델, 쿼리 패턴 등을 고려하여 결정해야 한다함. (by Claude)
+
+- 대규모 중첩 쿼리의 경우 여러 번의 데이터베이스 호출이 발생할 수 있어 성능 저하가 일어날 수 있음.
+- 때로는 단순히 모든 데이터를 한 번에 가져오는 것보다 구현이 복잡해질 수 있음.
+
+```typescript
+/* Restaurant entity */
+
+// 강의 내용
+  @Field(type => Category, { nullable: true })
+  @ManyToOne(
+    type => Category,
+    category => category.restaurants,
+    { nullable: true, onDelete: 'SET NULL', eager: true },
+  )
+  category: Category;
+
+// 적용 코드
+  @Field(() => Category, { nullable: true })
+  @Prop({
+    type: Types.ObjectId,
+    ref: 'Category',
+    required: false,
+  })
+  @IsOptional()
+  category?: Types.ObjectId | Category;
+```
+
+#### TODO
+
+시간이 여유가 조금 있을 때는 다음과 같은 작업을 해보려고 한다.
+
+- `mongoose-migrate`같은 스키마 변경 이력 관리를 ...
