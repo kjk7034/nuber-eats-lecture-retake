@@ -5,6 +5,7 @@ import { HydratedDocument, Types } from 'mongoose';
 import { CoreEntity } from 'src/common/entities/common.entity';
 import { Category } from './category.entity';
 import { User } from 'src/users/entities/user.entity';
+import { Dish } from './dish.entity';
 
 export type RestaurantDocument = HydratedDocument<Restaurant>;
 
@@ -40,6 +41,10 @@ export class Restaurant extends CoreEntity {
   @Field(() => User)
   @Prop({ type: Types.ObjectId, ref: 'User' })
   owner: Types.ObjectId | User;
+
+  @Field(() => [Dish], {})
+  @IsOptional()
+  menu?: Dish[];
 }
 
 export const RestaurantSchema = SchemaFactory.createForClass(Restaurant);
