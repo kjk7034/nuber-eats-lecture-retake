@@ -239,3 +239,7 @@ TypeORM에서 `ManyToOne, OneToMany`등 다양하게 관계를 맺었지만, 몽
 시간이 여유가 조금 있을 때는 다음과 같은 작업을 해보려고 한다.
 
 - `mongoose-migrate`같은 스키마 변경 이력 관리를 ...
+
+### 16강 Frontend Setup
+
+강의에서는 `Create React App`을 사용했지만, 나는 `Next.js`로 사용함.
