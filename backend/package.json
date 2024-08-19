@@ -3,7 +3,6 @@
   "version": "0.0.1",
   "description": "",
   "author": "",
-  "private": true,
   "license": "UNLICENSED",
   "scripts": {
     "build": "nest build",
@@ -66,7 +65,7 @@
     "typescript": "^5.1.3"
   },
   "jest": {
-    "moduleNameMapper":{
+    "moduleNameMapper": {
       "^src/(.*)$": "<rootDir>/$1"
     },
     "moduleFileExtensions": [

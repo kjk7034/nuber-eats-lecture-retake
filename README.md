@@ -243,3 +243,7 @@ TypeORM에서 `ManyToOne, OneToMany`등 다양하게 관계를 맺었지만, 몽
 ### 16강 Frontend Setup
 
 강의에서는 `Create React App`을 사용했지만, 나는 `Next.js`로 사용함.
+
+[Apollo Client Devtools](https://chromewebstore.google.com/detail/jdkknkkbebbapilgoeccciglkfbmbnfm)은 추가 설정해야 하는 부분도 있어서 패스함.
+
+`React Router Dom`도 패스

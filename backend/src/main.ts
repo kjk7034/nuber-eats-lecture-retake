@@ -8,7 +8,7 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
 
   app.useGlobalPipes(new ValidationPipe());
-  await app.listen(3000);
+  await app.listen(4000);
 
   const serverUrl = await app.getUrl();
   configService.set('SERVER_URL', serverUrl);
