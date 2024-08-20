@@ -247,3 +247,21 @@ TypeORM에서 `ManyToOne, OneToMany`등 다양하게 관계를 맺었지만, 몽
 [Apollo Client Devtools](https://chromewebstore.google.com/detail/jdkknkkbebbapilgoeccciglkfbmbnfm)은 추가 설정해야 하는 부분도 있어서 패스함.
 
 `React Router Dom`도 패스
+
+### 17강 Authentication
+
+`createApolloClient`에서 typePolicies localStorage를 이용해서 로그인 여부를 체크를 함.
+
+강의에서는 apollo tools를 설치 했지만, 나는 [Generating types](https://www.apollographql.com/tutorials/lift-off-part1/09-codegen)를 보고 `@graphql-codegen/cli @graphql-codegen/client-preset`을 사용함.
+
+인증 부분을 평소에 해보고 싶었던 [next-auth](https://next-auth.js.org/getting-started/example)를 적용했음
+
+추가적으로 프로젝트 구조는 FSD 아키텍처를 따라해보려고 했음.
+
+#### FSD의 주요 계층:
+
+- shared: 공유 유틸리티, 타입, UI 킷 등
+- entities: 비즈니스 엔티티 (User, Product 등)
+- features: 사용자 시나리오에 따른 기능
+- widgets: 페이지의 큰 부분을 구성하는 독립적인 블록
+- pages: 라우팅 및 레이아웃
