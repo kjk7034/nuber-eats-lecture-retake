@@ -265,3 +265,20 @@ TypeORM에서 `ManyToOne, OneToMany`등 다양하게 관계를 맺었지만, 몽
 - features: 사용자 시나리오에 따른 기능
 - widgets: 페이지의 큰 부분을 구성하는 독립적인 블록
 - pages: 라우팅 및 레이아웃
+
+### 12강 Dish and Order CRUD
+
+하기와 같이 populate를 했을 때 `Cannot return null for non-nullable field Dish.name` 메시지 발생.
+
+```
+await this.restaurants
+        .findById(restaurantId)
+        .populate('menu')
+```
+
+위 코드를 다음과 같이 수정하여 해결
+
+```
+...
+   .populate({ path: 'menu', model: 'Dish' });
+```

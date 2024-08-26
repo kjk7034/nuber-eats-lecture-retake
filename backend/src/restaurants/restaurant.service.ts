@@ -21,12 +21,17 @@ import {
   SearchRestaurantInput,
   SearchRestaurantOutput,
 } from './dtos/search-restaurant.dto';
+import { CreateDishInput, CreateDishOutput } from './dtos/create-dish.dto';
+import { Dish } from './entities/dish.entity';
+import { EditDishInput, EditDishOutput } from './dtos/edit-dish.dto';
+import { DeleteDishInput, DeleteDishOutput } from './dtos/delete-dish.dto';
 
 @Injectable()
 export class RestaurantService {
   constructor(
     @InjectModel(Restaurant.name) private restaurants: Model<Restaurant>,
     @InjectModel(Category.name) private categories: Model<Category>,
+    @InjectModel(Dish.name) private readonly dishes: Model<Dish>,
   ) {}
 
   async createRestaurant(
@@ -139,7 +144,7 @@ export class RestaurantService {
           error: "You can't delete a restaurant that you don't own",
         };
       }
-      console.log('will delete restaurant');
+      await this.restaurants.findByIdAndDelete(restaurant.id);
       return {
         ok: true,
       };
@@ -241,7 +246,9 @@ export class RestaurantService {
     restaurantId,
   }: RestaurantInput): Promise<RestaurantOutput> {
     try {
-      const restaurant = await this.restaurants.findById(restaurantId);
+      const restaurant = await this.restaurants
+        .findById(restaurantId)
+        .populate({ path: 'menu', model: 'Dish' });
 
       return {
         ok: true,
@@ -285,6 +292,139 @@ export class RestaurantService {
       return {
         ok: false,
         error: 'Could not saerch for restaurants',
+      };
+    }
+  }
+
+  async createDish(
+    owner: User,
+    createDishInput: CreateDishInput,
+  ): Promise<CreateDishOutput> {
+    try {
+      const restaurant = await this.restaurants
+        .findById(createDishInput.restaurantId)
+        .populate('owner');
+      if (!restaurant) {
+        return {
+          ok: false,
+          error: 'Restaurant not found',
+        };
+      }
+      if (owner.id !== restaurant.owner.id) {
+        return {
+          ok: false,
+          error: "You can't do that.",
+        };
+      }
+      const newDish = await this.dishes.create({
+        ...createDishInput,
+        restaurant,
+      });
+
+      // Restaurant의 menu 배열에 새로 생성된 Dish 추가
+      await this.restaurants.findByIdAndUpdate(
+        createDishInput.restaurantId,
+        { $push: { menu: newDish._id } },
+        { new: true },
+      );
+
+      return {
+        ok: true,
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        ok: false,
+        error: 'Could not create dish',
+      };
+    }
+  }
+
+  async checkDishOwner(ownerId: number, dishId: number) {}
+
+  async editDish(
+    owner: User,
+    editDishInput: EditDishInput,
+  ): Promise<EditDishOutput> {
+    try {
+      const dish = await this.dishes
+        .findById(editDishInput.dishId)
+        .populate({
+          path: 'restaurant',
+          populate: {
+            path: 'owner',
+            model: 'User',
+          },
+        })
+        .exec();
+      if (!dish) {
+        return {
+          ok: false,
+          error: 'Dish not found',
+        };
+      }
+      if ((dish.restaurant as Restaurant).owner.id !== owner.id) {
+        return {
+          ok: false,
+          error: "You can't do that.",
+        };
+      }
+      await this.dishes.findByIdAndUpdate(
+        editDishInput.dishId,
+        {
+          $set: {
+            ...editDishInput,
+          },
+        },
+        { new: true, runValidators: true },
+      );
+      return {
+        ok: true,
+      };
+    } catch {
+      return {
+        ok: false,
+        error: 'Could not delete dish',
+      };
+    }
+  }
+
+  async deleteDish(
+    owner: User,
+    { dishId }: DeleteDishInput,
+  ): Promise<DeleteDishOutput> {
+    try {
+      const dish = await this.dishes
+        .findById(dishId)
+        .populate({
+          path: 'restaurant',
+          populate: {
+            path: 'owner',
+            model: 'User',
+          },
+        })
+        .exec();
+
+      if (!dish) {
+        return {
+          ok: false,
+          error: 'Dish not found',
+        };
+      }
+      if ((dish.restaurant as Restaurant).owner.id !== owner.id) {
+        return {
+          ok: false,
+          error: "You can't do that.",
+        };
+      }
+      await this.dishes.findByIdAndDelete(dishId);
+      return {
+        ok: true,
+      };
+    } catch {
+      return {
+        ok: false,
+        error: 'Could not delete dish',
       };
     }
   }

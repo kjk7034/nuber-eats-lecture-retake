@@ -1,11 +1,33 @@
 import { Field, InputType, ObjectType } from '@nestjs/graphql';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { IsNumber, IsOptional, IsString, Length } from 'class-validator';
+import { IsNumber, IsString, Length } from 'class-validator';
 import { HydratedDocument, Types } from 'mongoose';
 import { CoreEntity } from 'src/common/entities/common.entity';
 import { Restaurant } from './restaurant.entity';
 
 export type DishDocument = HydratedDocument<Dish>;
+
+@InputType('DishChoiceInputType', { isAbstract: true })
+@ObjectType()
+class DishChoice {
+  @Field(() => String)
+  name: string;
+  @Field(() => Number, { nullable: true })
+  extra?: number;
+}
+
+@InputType('DishOptionInputType', { isAbstract: true })
+@ObjectType()
+export class DishOption {
+  @Field(() => String)
+  name: string;
+
+  @Field(() => [DishChoice], { nullable: true })
+  choices?: DishChoice[];
+
+  @Field(() => Number, { nullable: true })
+  extra?: number;
+}
 
 @InputType('DishInputType', { isAbstract: true })
 @ObjectType()
@@ -22,10 +44,10 @@ export class Dish extends CoreEntity {
   @IsNumber()
   price: number;
 
-  @Field(() => String)
-  @Prop()
+  @Field(() => String, { nullable: true })
+  @Prop({ required: false })
   @IsString()
-  photo: string;
+  photo?: string;
 
   @Field(() => String)
   @Prop()
@@ -33,7 +55,7 @@ export class Dish extends CoreEntity {
   @Length(5, 140)
   description: string;
 
-  @Field(() => Restaurant, {})
+  @Field(() => Restaurant)
   @Prop({
     type: Types.ObjectId,
     ref: 'Restaurant',
@@ -42,6 +64,10 @@ export class Dish extends CoreEntity {
 
   @Field(() => String)
   restaurantId: string;
+
+  @Field(() => [DishOption], { nullable: true })
+  @Prop({ type: [Object], required: false })
+  options?: DishOption[];
 }
 
 export const DishSchema = SchemaFactory.createForClass(Dish);

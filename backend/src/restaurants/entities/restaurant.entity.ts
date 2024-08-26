@@ -1,6 +1,6 @@
 import { Field, InputType, ObjectType } from '@nestjs/graphql';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { IsOptional, IsString, Length } from 'class-validator';
+import { IsString, Length } from 'class-validator';
 import { HydratedDocument, Types } from 'mongoose';
 import { CoreEntity } from 'src/common/entities/common.entity';
 import { Category } from './category.entity';
@@ -11,7 +11,7 @@ export type RestaurantDocument = HydratedDocument<Restaurant>;
 
 @InputType('RestaurantInputType', { isAbstract: true })
 @ObjectType()
-@Schema({ _id: true })
+@Schema()
 export class Restaurant extends CoreEntity {
   @Field(() => String)
   @Prop()
@@ -35,16 +35,22 @@ export class Restaurant extends CoreEntity {
     ref: 'Category',
     required: false,
   })
-  @IsOptional()
-  category?: Types.ObjectId | Category;
+  category: Types.ObjectId | Category;
 
   @Field(() => User)
   @Prop({ type: Types.ObjectId, ref: 'User' })
   owner: Types.ObjectId | User;
 
-  @Field(() => [Dish], {})
-  @IsOptional()
-  menu?: Dish[];
+  // @Field(() => String)
+  // ownerId: string;
+
+  // @Field(() => [Order])
+  // @Prop({ type: [{ type: Types.ObjectId, ref: 'Order' }] })
+  // orders: Types.ObjectId[] | Order[];
+
+  @Field(() => [Dish])
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Dish' }] })
+  menu: Types.ObjectId[] | Dish[];
 }
 
 export const RestaurantSchema = SchemaFactory.createForClass(Restaurant);
