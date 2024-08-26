@@ -11,6 +11,7 @@ import { hashPassword } from '../user.utils';
 import { Model, Query, Types, UpdateQuery } from 'mongoose';
 import { Verification } from './verification.entity';
 import { Restaurant } from 'src/restaurants/entities/restaurant.entity';
+import { Order } from 'src/orders/entities/order.entity';
 
 export enum UserRole {
   Client = 'Client',
@@ -50,6 +51,14 @@ export class User extends CoreEntity {
   @Field(() => [Restaurant])
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Restaurant' }] })
   restaurants: Types.ObjectId[] | Restaurant[];
+
+  @Field(() => [Order])
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Order' }] })
+  orders: Types.ObjectId[] | Order[];
+
+  @Field(() => [Order])
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Order' }] })
+  rides: Types.ObjectId[] | Order[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
